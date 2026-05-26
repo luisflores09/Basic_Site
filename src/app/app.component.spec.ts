@@ -1,10 +1,11 @@
 import { TestBed } from '@angular/core/testing';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { AppComponent } from './app.component';
 
 describe('AppComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppComponent],
+      imports: [AppComponent, NoopAnimationsModule],
     }).compileComponents();
   });
 
@@ -14,16 +15,30 @@ describe('AppComponent', () => {
     expect(app).toBeTruthy();
   });
 
-  it(`should have the 'Basic_Site' title`, () => {
+  it('should expose the brand name', () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
-    expect(app.title).toEqual('Basic_Site');
+    expect(app.appName).toEqual('Harness');
   });
 
-  it('should render title', () => {
+  it('should render the home page heading', () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, Basic_Site');
+    expect(compiled.querySelector('h1')?.textContent).toContain('Build better workflows with confidence');
+  });
+
+  it('should render all feature cards', () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    fixture.detectChanges();
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelectorAll('.feature-card').length).toBe(3);
+  });
+
+  it('should render the quick links section', () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    fixture.detectChanges();
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelectorAll('.quick-links a').length).toBe(3);
   });
 });
