@@ -1,0 +1,43 @@
+kind: pipeline
+spec:
+  triggers:
+  - name: push_trigger
+    disabled: false
+    on:
+      push:
+        branches:
+        - dev
+        - master
+  stages:
+  - name: build
+    spec:
+      platform:
+        arch: amd64
+        os: linux
+      steps:
+      - name: npm_install
+        spec:
+          container:
+            image: node
+          script:
+          - npm install
+        type: run
+      - name: npm_build
+        spec:
+          container:
+            image: node
+          script:
+          - npm run build
+        type: run
+      - name: npm_test
+        spec:
+          container:
+            image: node:20-bookworm
+          envs:
+            CHROME_BIN: /usr/bin/chromium
+          script:
+          - apt-get update -qq && apt-get install -y chromium --no-install-recommends
+          - npm test -- --watch=false --browsers=ChromeHeadless
+        type: run
+    type: ci
+version: 1
