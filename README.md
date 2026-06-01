@@ -1,47 +1,125 @@
-# BasicSite
+# Basic Site
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.10.
+An Angular 19 application with Angular Material UI, built and tested through a Harness Open Source CI pipeline.
 
-## Development server
+## Tech stack
 
-To start a local development server, run:
+- **Angular 19** with standalone components
+- **Angular Material** (azure-blue theme) for UI components
+- **Karma + ChromeHeadless** for unit tests
+- **Harness Open Source** for CI (self-hosted via Docker)
+
+---
+
+## Getting started
+
+### Prerequisites
+
+- Node.js 20+
+- Angular CLI (`npm install -g @angular/cli`)
+
+### Install dependencies
+
+```bash
+npm install
+```
+
+### Run the development server
 
 ```bash
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Open `http://localhost:4200/`. The app reloads automatically on file changes.
+
+---
+
+## Building
+
+```bash
+npm run build
+```
+
+Output is placed in the `dist/` directory, optimised for production.
+
+---
+
+## Running unit tests
+
+```bash
+npm test
+```
+
+Tests run via Karma with ChromeHeadless. For a single run (no file watcher):
+
+```bash
+npm test -- --watch=false --browsers=ChromeHeadless
+```
+
+---
+
+## Branch strategy
+
+| Branch | Purpose |
+|---|---|
+| `dev` | Active development — all changes go here first |
+| `master` | Stable, production-ready code — only updated via Pull Request from `dev` |
+
+**Workflow:**
+1. Work on `dev`, push changes
+2. CI pipeline runs automatically (install → build → test)
+3. If all steps pass, open a Pull Request to merge into `master`
+4. `master` is protected — direct pushes are blocked
+
+---
+
+## CI pipeline (`harness-pipeline.yaml`)
+
+The pipeline is defined in [`harness-pipeline.yaml`](harness-pipeline.yaml) and runs on Harness Open Source.
+
+### Trigger
+
+Automatically fires on every push to `dev` or `master`.
+
+### Stages and steps
+
+| Step | Image | What it does |
+|---|---|---|
+| `npm_install` | `node` | Installs dependencies via `npm install` |
+| `npm_build` | `node` | Compiles the app via `npm run build` |
+| `npm_test` | `node:20-bookworm` | Installs Chromium, runs unit tests headlessly |
+
+Each step must pass before the next one runs. A failed build prevents tests from executing.
+
+### Running Harness Open Source locally
+
+```bash
+docker run -d \
+  -p 3000:3000 -p 3022:3022 \
+  -e DOCKER_HOST=tcp://host.docker.internal:2375 \
+  --add-host=host.docker.internal:host-gateway \
+  -v /tmp/harness:/data \
+  --name opensource \
+  --restart always \
+  harness/harness:latest
+```
+
+Open `http://localhost:3000` to access the Harness UI.
+
+> **Windows requirement:** Docker Desktop must have "Expose daemon on tcp://localhost:2375" enabled under Settings → General.
+
+---
 
 ## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
 
 ```bash
 ng generate component component-name
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+For a full list of schematics:
 
 ```bash
 ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
 ```
 
 ## Running end-to-end tests
