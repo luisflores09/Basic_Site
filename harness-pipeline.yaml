@@ -1,13 +1,14 @@
 kind: pipeline
+version: 1
+triggers:
+- name: push_trigger
+  disabled: false
+  on:
+    push:
+      branches:
+      - dev
+      - master
 spec:
-  triggers:
-  - name: push_trigger
-    disabled: false
-    on:
-      push:
-        branches:
-        - dev
-        - master
   stages:
   - name: build
     spec:
@@ -40,4 +41,3 @@ spec:
           - npm test -- --watch=false --browsers=ChromeHeadless
         type: run
     type: ci
-version: 1
