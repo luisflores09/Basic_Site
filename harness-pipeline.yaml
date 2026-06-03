@@ -1,43 +1,61 @@
 kind: pipeline
 version: 1
 triggers:
-- name: push_trigger
-  disabled: false
-  on:
-    push:
-      branches:
-      - dev
-      - master
+  - name: push_trigger
+    disabled: false
+    on:
+      push:
+        branches:
+          - dev
+          - master
 spec:
+  secrets:
+    - name: dockerhub_username
+      value: <+secrets.getValue("dockerhub_username")>
+    - name: dockerhub_pat
+      value: <+secrets.getValue("dockerhub_pat")>
   stages:
-  - name: build
-    spec:
-      platform:
-        arch: amd64
-        os: linux
-      steps:
-      - name: npm_install
-        spec:
-          container:
-            image: node
-          script:
-          - npm install
-        type: run
-      - name: npm_build
-        spec:
-          container:
-            image: node
-          script:
-          - npm run build
-        type: run
-      - name: npm_test
-        spec:
-          container:
-            image: node:20-bookworm
-          envs:
-            CHROME_BIN: /usr/bin/chromium
-          script:
-          - apt-get update -qq && apt-get install -y chromium --no-install-recommends
-          - npm test -- --watch=false --browsers=ChromeHeadless
-        type: run
-    type: ci
+    - name: build
+      spec:
+        platform:
+          arch: amd64
+          os: linux
+        steps:
+          - name: npm_install
+            spec:
+              container:
+                image: node
+              script:
+                - npm install
+            type: run
+          - name: npm_build
+            spec:
+              container:
+                image: node
+              script:
+                - npm run build
+            type: run
+          - name: npm_test
+            spec:
+              container:
+                image: node:20-bookworm
+              envs:
+                CHROME_BIN: /usr/bin/chromium
+              script:
+                - apt-get update -qq && apt-get install -y chromium --no-install-recommends
+                - npm test -- --watch=false --browsers=ChromeHeadless
+            type: run
+          - name: docker_build_push
+            type: plugin
+            spec:
+              image: plugins/docker
+              settings:
+                repo: ziulaa99/basic-site
+                username: <+secrets.getValue("dockerhub_username")>
+                password: <+secrets.getValue("dockerhub_pat")>
+                tags:
+                  - latest
+                  - <+pipeline.sequenceId>
+                dockerfile: Dockerfile
+                context: .            
+      type: ci
